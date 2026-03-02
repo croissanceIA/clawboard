@@ -27,6 +27,7 @@ export interface RawJobDelivery {
   mode: string
   bestEffort?: boolean
   channel?: string
+  to?: string
   recipient?: string
 }
 

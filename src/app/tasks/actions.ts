@@ -94,9 +94,18 @@ export async function createSchedule(data: {
   const jobId = `clawboard-${crypto.randomUUID().slice(0, 8)}`
   const now = Date.now()
 
+  // Build the full message from pre-instructions + template
+  const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
+  const messageParts = [
+    pre?.content,
+    tpl.preInstructions,
+    tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
+    tpl.instructions,
+  ].filter(Boolean).join('\n\n---\n\n')
+
   const newJob: RawJob = {
     id: jobId,
-    agentId: tpl.agentId,
+    agentId: tpl.agentId || 'main',
     name: tpl.name,
     enabled: true,
     createdAtMs: now,
@@ -106,10 +115,12 @@ export async function createSchedule(data: {
       expr: data.cronExpression,
       tz: data.timezone,
     },
+    sessionTarget: 'isolated',
+    wakeMode: 'now',
     payload: {
-      kind: 'message',
-      message: tpl.instructions,
-      model: tpl.model,
+      kind: 'agentTurn',
+      message: messageParts,
+      model: tpl.model || undefined,
     },
     state: {
       nextRunAtMs: 0,
@@ -119,10 +130,10 @@ export async function createSchedule(data: {
       consecutiveErrors: 0,
     },
     delivery: tpl.deliveryChannel ? {
-      mode: 'best-effort',
+      mode: 'announce',
       bestEffort: true,
       channel: tpl.deliveryChannel,
-      recipient: tpl.deliveryRecipient ?? undefined,
+      to: tpl.deliveryRecipient ? `channel:${tpl.deliveryRecipient}` : undefined,
     } : undefined,
   }
 
