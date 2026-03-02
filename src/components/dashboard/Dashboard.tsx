@@ -61,7 +61,7 @@ export function Dashboard({
         <h2 className="mb-3 text-sm font-medium text-zinc-900 dark:text-zinc-100">Exécutions récentes</h2>
         <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900">
           <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-            {recentExecutions.map((execution) => (<ExecutionRow key={execution.id} execution={execution} onClick={() => onExecutionClick?.(execution.id)} />))}
+            {recentExecutions.map((execution) => (<ExecutionRow key={execution.id} execution={execution} onClick={() => onExecutionClick?.(execution.cronJobId)} />))}
           </div>
           {recentExecutions.length === 0 && (<div className="py-12 text-center text-sm text-zinc-400 dark:text-zinc-500">Aucune exécution pour le moment. Les tâches apparaîtront ici une fois lancées.</div>)}
         </div>
