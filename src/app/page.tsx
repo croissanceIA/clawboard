@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { aggregateDashboard } from '@/lib/cron/aggregator'
 import { DashboardClient } from './DashboardClient'
 

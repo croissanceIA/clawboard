@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { aggregateTasks } from '@/lib/cron/tasks-aggregator'
 import { TasksClient } from './TasksClient'
 
