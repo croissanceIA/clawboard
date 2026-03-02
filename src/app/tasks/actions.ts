@@ -10,6 +10,33 @@ import { readJobs, writeJobs } from '@/lib/cron/reader'
 import type { Template } from '@/components/tasks/types'
 import type { RawJob } from '@/lib/cron/types'
 
+function buildMessage(tpl: { preInstructions: string | null; skillName: string | null; instructions: string }, globalPre?: string | null): string {
+  return [
+    globalPre,
+    tpl.preInstructions,
+    tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
+    tpl.instructions,
+  ].filter(Boolean).join('\n\n---\n\n')
+}
+
+function syncJobWithTemplate(tpl: typeof import('@/lib/db/schema').templates.$inferSelect): void {
+  if (!tpl.cronJobId) return
+  const jobs = readJobs()
+  const job = jobs.find((j) => j.id === tpl.cronJobId)
+  if (!job) return
+
+  const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
+  job.payload.message = buildMessage(tpl, pre?.content)
+  job.name = tpl.name
+  if (tpl.model) job.payload.model = tpl.model
+  if (tpl.deliveryChannel && job.delivery) {
+    job.delivery.channel = tpl.deliveryChannel
+    job.delivery.to = tpl.deliveryRecipient ? `channel:${tpl.deliveryRecipient}` : undefined
+  }
+  job.updatedAtMs = Date.now()
+  writeJobs(jobs)
+}
+
 export async function createTemplate(
   data: Omit<Template, 'id' | 'executionCount' | 'createdAt' | 'updatedAt'>
 ) {
@@ -39,6 +66,11 @@ export async function updateTemplate(id: string, updates: Partial<Template>) {
     .set({ ...rest, updatedAt: now })
     .where(eq(templates.id, id))
     .run()
+
+  // Sync changes to jobs.json if template is linked to a cron job
+  const tpl = db.select().from(templates).where(eq(templates.id, id)).get()
+  if (tpl) syncJobWithTemplate(tpl)
+
   revalidatePath('/tasks')
 }
 
@@ -52,19 +84,9 @@ export async function runNow(templateId: string) {
   if (!tpl) return
 
   const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
+  const parts = buildMessage(tpl, pre?.content)
 
-  const parts = [
-    pre?.content,
-    tpl.preInstructions,
-    tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
-    tpl.instructions,
-  ].filter(Boolean).join('\n\n---\n\n')
-
-  const escaped = parts.replace(/'/g, "'\\''")
   const agent = tpl.agentId || 'main'
-  const deliverArgs = tpl.deliveryChannel && tpl.deliveryRecipient
-    ? ` --deliver --reply-channel ${tpl.deliveryChannel} --reply-to '${tpl.deliveryRecipient}'`
-    : ''
   const args = ['agent', '--agent', agent, '-m', parts]
   if (tpl.deliveryChannel && tpl.deliveryRecipient) {
     args.push('--deliver', '--reply-channel', tpl.deliveryChannel, '--reply-to', tpl.deliveryRecipient)
@@ -109,12 +131,7 @@ export async function createSchedule(data: {
 
   // Build the full message from pre-instructions + template
   const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
-  const messageParts = [
-    pre?.content,
-    tpl.preInstructions,
-    tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
-    tpl.instructions,
-  ].filter(Boolean).join('\n\n---\n\n')
+  const messageParts = buildMessage(tpl, pre?.content)
 
   const newJob: RawJob = {
     id: jobId,
@@ -202,5 +219,12 @@ export async function savePreInstructions(content: string) {
     .set({ content, updatedAt: now })
     .where(eq(preInstructions.id, 1))
     .run()
+
+  // Sync all linked jobs with updated pre-instructions
+  const allTemplates = db.select().from(templates).all()
+  for (const tpl of allTemplates) {
+    syncJobWithTemplate(tpl)
+  }
+
   revalidatePath('/tasks')
 }
