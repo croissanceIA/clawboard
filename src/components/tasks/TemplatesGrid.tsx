@@ -83,7 +83,7 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
             </div>
             <div className="flex items-center justify-end gap-2 border-t border-zinc-100 px-6 py-4 dark:border-zinc-800">
               <button onClick={() => setModalOpen(false)} className="rounded-lg px-4 py-2 text-xs font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800">Annuler</button>
-              <button onClick={handleSave} disabled={!form.name || !form.instructions} className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600">{editingId ? 'Enregistrer' : 'Créer le modèle'}</button>
+              <button onClick={handleSave} disabled={!form.name || (!form.instructions && !form.skillName)} className="rounded-lg bg-blue-600 px-4 py-2 text-xs font-medium text-white shadow-sm transition-colors hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600">{editingId ? 'Enregistrer' : 'Créer le modèle'}</button>
             </div>
           </div>
         </div>
