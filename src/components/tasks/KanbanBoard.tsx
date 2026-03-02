@@ -19,7 +19,6 @@ const COLUMNS: { id: KanbanColumn; label: string; icon: React.ReactNode; color: 
 function getColumn(job: CronJob): KanbanColumn {
   if (!job.enabled) return 'pending'
   if (job.lastStatus === 'error') return 'failed'
-  if (job.lastRunAtMs && !job.lastStatus) return 'running'
   if (job.nextRunAtMs && job.nextRunAtMs > Date.now()) return 'planned'
   if (job.lastStatus === 'ok') return 'completed'
   return 'planned'
