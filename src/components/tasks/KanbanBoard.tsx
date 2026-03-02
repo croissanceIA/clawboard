@@ -17,10 +17,11 @@ const COLUMNS: { id: KanbanColumn; label: string; icon: React.ReactNode; color: 
 ]
 
 function getColumn(job: CronJob): KanbanColumn {
-  if (!job.enabled) return 'planned'
+  if (!job.enabled) return 'pending'
   if (job.lastStatus === 'error') return 'failed'
-  if (job.lastStatus === 'ok') return 'completed'
   if (job.lastRunAtMs && !job.lastStatus) return 'running'
+  if (job.nextRunAtMs && job.nextRunAtMs > Date.now()) return 'planned'
+  if (job.lastStatus === 'ok') return 'completed'
   return 'planned'
 }
 
@@ -80,6 +81,11 @@ export function KanbanBoard({ cronJobs, templates, onViewTaskDetail }: KanbanBoa
                         <span>{job.frequencyLabel}</span>
                         <span>{formatTime(job.lastRunAtMs)}</span>
                       </div>
+                      {job.nextRunAtMs && job.nextRunAtMs > Date.now() && (
+                        <div className="mt-1.5 text-[11px] text-blue-500 dark:text-blue-400">
+                          Prochain : {formatTime(job.nextRunAtMs)}
+                        </div>
+                      )}
                       {job.consecutiveErrors > 0 && <div className="mt-2 flex items-center gap-1 text-[11px] text-red-500"><AlertTriangle className="size-3" />{job.consecutiveErrors} erreur{job.consecutiveErrors > 1 ? 's' : ''} consécutive{job.consecutiveErrors > 1 ? 's' : ''}</div>}
                     </button>
                   )

@@ -14,7 +14,7 @@ git commit -m "Initial commit"
 gh repo create croissanceIA/clawboard --private --source . --push
 ```
 
-## Étape 2 — Sur openclaw : cloner et installer
+## Étape 2 — Sur openclaw : cloner et configurer l'environnement
 
 ```bash
 cd ~
@@ -23,8 +23,18 @@ cd clawboard
 
 # Installer les dépendances
 npm install
+```
 
-# Build production
+Le `.env.local` n'est pas versionné (gitignore). Il faut le créer **avant le build** (Next.js intègre les variables d'env au moment du build, pas au runtime) :
+
+```bash
+cat > ~/clawboard/.env.local << 'EOF'
+OPENCLAW_CRON_PATH=/Users/mireillemonin/.openclaw/cron
+EOF
+```
+
+```bash
+# Build production (après avoir créé .env.local)
 npm run build
 ```
 
@@ -34,17 +44,24 @@ npm run build
 # Installer pm2
 npm install -g pm2
 
-# Lancer l'app sur le port 3000
-pm2 start npm --name "clawboard" -- start
+# Lancer l'app sur le port 3000 (écoute sur toutes les interfaces pour accès Tailscale)
+pm2 start npm --name "clawboard" -- start -- -H 0.0.0.0
 
 # Sauvegarder et auto-restart au boot
 pm2 save
 pm2 startup  # suivre les instructions affichées
 ```
 
-L'app est accessible sur `http://openclaw.local:3000`
+## Étape 4 — Autoriser Node dans le firewall macOS
 
-## Étape 4 — Script de mise à jour
+```bash
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --add $(which node)
+sudo /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp $(which node)
+```
+
+L'app est accessible via Tailscale sur `http://100.108.65.56:3000`
+
+## Étape 5 — Script de mise à jour
 
 Créer `~/clawboard/deploy.sh` sur openclaw :
 
