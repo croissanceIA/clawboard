@@ -6,6 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { templates, preInstructions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
+import { CronExpressionParser } from 'cron-parser'
 import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
 import type { Template } from '@/components/tasks/types'
 import type { RawJob } from '@/lib/cron/types'
@@ -183,7 +184,12 @@ export async function createSchedule(data: {
       model: tpl.model || undefined,
     },
     state: {
-      nextRunAtMs: 0,
+      nextRunAtMs: (() => {
+        try {
+          const interval = CronExpressionParser.parse(data.cronExpression, { tz: data.timezone })
+          return interval.next().getTime()
+        } catch { return 0 }
+      })(),
       lastRunAtMs: 0,
       lastStatus: '',
       lastDurationMs: 0,
