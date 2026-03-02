@@ -6,7 +6,7 @@ import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { templates, preInstructions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { readJobs, writeJobs } from '@/lib/cron/reader'
+import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
 import type { Template } from '@/components/tasks/types'
 import type { RawJob } from '@/lib/cron/types'
 
@@ -91,11 +91,41 @@ export async function runNow(templateId: string) {
   if (tpl.deliveryChannel && tpl.deliveryRecipient) {
     args.push('--deliver', '--reply-channel', tpl.deliveryChannel, '--reply-to', tpl.deliveryRecipient)
   }
+
+  const jobId = tpl.cronJobId || `clawboard-manual-${tpl.id}`
+  const startMs = Date.now()
+
   const child = spawn('/opt/homebrew/bin/openclaw', args, {
     detached: true,
-    stdio: 'ignore',
+    stdio: ['ignore', 'pipe', 'pipe'],
     env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` },
   })
+
+  let stdout = ''
+  let stderr = ''
+  child.stdout?.on('data', (data: Buffer) => { stdout += data.toString() })
+  child.stderr?.on('data', (data: Buffer) => { stderr += data.toString() })
+
+  child.on('close', (code) => {
+    const durationMs = Date.now() - startMs
+    const status = code === 0 ? 'ok' : 'error'
+    const summary = status === 'ok'
+      ? (stdout.trim().slice(-500) || 'Exécution terminée')
+      : (stderr.trim().slice(-500) || `Exit code ${code}`)
+
+    appendRun(jobId, {
+      ts: Date.now(),
+      jobId,
+      action: 'finished',
+      status,
+      summary,
+      runAtMs: startMs,
+      durationMs,
+      model: tpl.model || undefined,
+      source: 'clawboard-manual',
+    })
+  })
+
   child.unref()
 
   // Increment execution count

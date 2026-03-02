@@ -1,17 +1,18 @@
 'use server'
 
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { templates, preInstructions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { readJobs, writeJobs } from '@/lib/cron/reader'
+import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
 import type { TaskEditPayload } from '@/components/task-detail/types'
 
 export async function runAgainTask(cronJobId: string) {
   const tpl = db.select().from(templates).where(eq(templates.cronJobId, cronJobId)).get()
 
   let message: string
+  let model: string | undefined
   if (tpl) {
     const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
     const parts = [
@@ -21,6 +22,7 @@ export async function runAgainTask(cronJobId: string) {
       tpl.instructions,
     ].filter(Boolean).join('\n\n---\n\n')
     message = parts
+    model = tpl.model || undefined
 
     // Increment execution count
     db.update(templates)
@@ -33,10 +35,49 @@ export async function runAgainTask(cronJobId: string) {
     const job = jobs.find((j) => j.id === cronJobId)
     if (!job) return
     message = job.payload.message
+    model = job.payload.model
   }
 
-  const escaped = message.replace(/'/g, "'\\''")
-  exec(`openclaw agent '${escaped}'`)
+  const agent = tpl?.agentId || 'main'
+  const args = ['agent', '--agent', agent, '-m', message]
+  if (tpl?.deliveryChannel && tpl?.deliveryRecipient) {
+    args.push('--deliver', '--reply-channel', tpl.deliveryChannel, '--reply-to', tpl.deliveryRecipient)
+  }
+
+  const startMs = Date.now()
+
+  const child = spawn('/opt/homebrew/bin/openclaw', args, {
+    detached: true,
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` },
+  })
+
+  let stdout = ''
+  let stderr = ''
+  child.stdout?.on('data', (data: Buffer) => { stdout += data.toString() })
+  child.stderr?.on('data', (data: Buffer) => { stderr += data.toString() })
+
+  child.on('close', (code) => {
+    const durationMs = Date.now() - startMs
+    const status = code === 0 ? 'ok' : 'error'
+    const summary = status === 'ok'
+      ? (stdout.trim().slice(-500) || 'Exécution terminée')
+      : (stderr.trim().slice(-500) || `Exit code ${code}`)
+
+    appendRun(cronJobId, {
+      ts: Date.now(),
+      jobId: cronJobId,
+      action: 'finished',
+      status,
+      summary,
+      runAtMs: startMs,
+      durationMs,
+      model,
+      source: 'clawboard-manual',
+    })
+  })
+
+  child.unref()
 
   revalidatePath('/tasks')
   revalidatePath(`/tasks/${cronJobId}`)

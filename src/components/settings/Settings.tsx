@@ -35,7 +35,7 @@ export function Settings({
         <Info className="mt-0.5 size-4 shrink-0 text-blue-500" />
         <div className="min-w-0 text-sm text-blue-700 dark:text-blue-300">
           <p>
-            Les paramètres sont lus depuis votre fichier de configuration OpenClaw et nécessitent un redémarrage pour être modifiés.
+            Configuration de votre instance ClawBoard et connexion à OpenClaw.
           </p>
           <div className="mt-2 flex items-center gap-2">
             <code

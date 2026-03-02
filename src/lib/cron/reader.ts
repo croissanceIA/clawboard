@@ -6,6 +6,15 @@ function getCronPath(): string {
   return process.env.OPENCLAW_CRON_PATH || ''
 }
 
+export function appendRun(jobId: string, entry: Record<string, unknown>): void {
+  const cronPath = getCronPath()
+  if (!cronPath) return
+  const runsDir = path.join(cronPath, 'runs')
+  if (!fs.existsSync(runsDir)) fs.mkdirSync(runsDir, { recursive: true })
+  const filePath = path.join(runsDir, `${jobId}.jsonl`)
+  fs.appendFileSync(filePath, JSON.stringify(entry) + '\n', 'utf-8')
+}
+
 export function readJobs(): RawJob[] {
   const cronPath = getCronPath()
   if (!cronPath) return []
