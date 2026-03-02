@@ -124,26 +124,21 @@ export function checkConnections(): ConnectionStatus[] {
   return statuses
 }
 
-export async function testOpenRouterKey(): Promise<ConnectionStatus> {
+/** Read the OpenRouter API token from OpenClaw's auth-profiles.json */
+export function getOpenRouterToken(): string | undefined {
   const openclawRoot = getOpenClawRoot()
   const authProfilesPath = openclawRoot
     ? path.join(openclawRoot, 'agents', 'main', 'agent', 'auth-profiles.json')
     : ''
-
-  if (!authProfilesPath) {
-    return {
-      id: 'openrouter',
-      name: 'OpenRouter API',
-      status: 'error',
-      detail: 'Cannot locate auth-profiles.json',
-      checkedAt: new Date().toISOString(),
-    }
-  }
-
+  if (!authProfilesPath) return undefined
   const authProfiles = readJsonFile(authProfilesPath) as Record<string, unknown> | null
   const profiles = authProfiles?.profiles as Record<string, unknown> | undefined
   const openrouterProfile = profiles?.['openrouter:manual'] as Record<string, unknown> | undefined
-  const token = openrouterProfile?.token as string | undefined
+  return openrouterProfile?.token as string | undefined
+}
+
+export async function testOpenRouterKey(): Promise<ConnectionStatus> {
+  const token = getOpenRouterToken()
 
   if (!token) {
     return {

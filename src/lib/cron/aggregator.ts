@@ -8,6 +8,7 @@ import type {
 import type { RawJob, RawRunLine } from './types'
 import { readJobs, readAllRuns } from './reader'
 import { computeCostUsd } from './pricing'
+import { getOpenRouterCostSummary } from '@/lib/openrouter/activity'
 
 function startOfDay(date: Date): Date {
   const d = new Date(date)
@@ -139,16 +140,24 @@ function buildFailureAlerts(jobs: RawJob[], allRuns: Map<string, RawRunLine[]>):
   return alerts
 }
 
-export function aggregateDashboard(): {
+async function getCostSummaryWithFallback(allRuns: Map<string, RawRunLine[]>): Promise<CostSummary> {
+  try {
+    return await getOpenRouterCostSummary()
+  } catch {
+    return computeRunCosts(allRuns)
+  }
+}
+
+export async function aggregateDashboard(): Promise<{
   dashboardProps: DashboardProps
   costTodayFormatted: string
-} {
+}> {
   const jobs = readJobs()
   const allRuns = readAllRuns()
   const jobNameMap = buildJobNameMap(jobs)
 
   const stats = computeStats(jobs, allRuns)
-  const costSummary = computeRunCosts(allRuns)
+  const costSummary = await getCostSummaryWithFallback(allRuns)
   const recentExecutions = buildRecentExecutions(allRuns, jobNameMap)
   const failureAlerts = buildFailureAlerts(jobs, allRuns)
 
@@ -158,20 +167,25 @@ export function aggregateDashboard(): {
   }
 }
 
-export function getTodayCost(): string {
-  const jobs = readJobs()
-  if (jobs.length === 0) return '$0.00'
-  const allRuns = readAllRuns()
-  const now = new Date()
-  const todayStart = startOfDay(now).getTime()
+export async function getTodayCost(): Promise<string> {
+  try {
+    const summary = await getOpenRouterCostSummary()
+    return `$${summary.todayUsd.toFixed(2)}`
+  } catch {
+    const jobs = readJobs()
+    if (jobs.length === 0) return '$0.00'
+    const allRuns = readAllRuns()
+    const now = new Date()
+    const todayStart = startOfDay(now).getTime()
 
-  let todayUsd = 0
-  for (const [, runs] of allRuns) {
-    for (const run of runs) {
-      if (run.ts >= todayStart) {
-        todayUsd += computeCostUsd(run.model, run.usage)
+    let todayUsd = 0
+    for (const [, runs] of allRuns) {
+      for (const run of runs) {
+        if (run.ts >= todayStart) {
+          todayUsd += computeCostUsd(run.model, run.usage)
+        }
       }
     }
+    return `$${todayUsd.toFixed(2)}`
   }
-  return `$${todayUsd.toFixed(2)}`
 }

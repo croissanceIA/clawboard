@@ -24,12 +24,12 @@ export const metadata: Metadata = {
   description: 'Couche de contrôle visuelle pour OpenClaw',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const costToday = getTodayCost()
+  const costToday = await getTodayCost()
 
   return (
     <html lang="fr" className={`${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
