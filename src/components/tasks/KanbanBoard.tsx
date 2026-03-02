@@ -18,9 +18,18 @@ const COLUMNS: { id: KanbanColumn; label: string; icon: React.ReactNode; color: 
 
 function getColumn(job: CronJob): KanbanColumn {
   if (!job.enabled) return 'pending'
+
+  const now = new Date()
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
+
+  // Si le job a tourné aujourd'hui, montrer son résultat
+  if (job.lastRunAtMs && job.lastRunAtMs >= todayStart) {
+    if (job.lastStatus === 'error') return 'failed'
+    if (job.lastStatus === 'ok') return 'completed'
+  }
+
+  // Sinon, erreur persistante ou planifié
   if (job.lastStatus === 'error') return 'failed'
-  if (job.nextRunAtMs && job.nextRunAtMs > Date.now()) return 'planned'
-  if (job.lastStatus === 'ok') return 'completed'
   return 'planned'
 }
 
@@ -41,7 +50,17 @@ const columnAccent: Record<string, { dot: string; bg: string; border: string; he
 export function KanbanBoard({ cronJobs, templates, onViewTaskDetail }: KanbanBoardProps) {
   const [filterStatus, setFilterStatus] = useState<KanbanColumn | 'all'>('all')
   const templateMap = new Map(templates.map((t) => [t.cronJobId, t]))
-  const grouped = COLUMNS.reduce((acc, col) => { acc[col.id] = cronJobs.filter((j) => getColumn(j) === col.id); return acc }, {} as Record<KanbanColumn, CronJob[]>)
+  const grouped = COLUMNS.reduce((acc, col) => {
+    const jobs = cronJobs.filter((j) => getColumn(j) === col.id)
+    // Tri chronologique : planifié par nextRunAtMs, terminé/échoué par lastRunAtMs
+    if (col.id === 'planned') {
+      jobs.sort((a, b) => (a.nextRunAtMs ?? Infinity) - (b.nextRunAtMs ?? Infinity))
+    } else if (col.id === 'completed' || col.id === 'failed') {
+      jobs.sort((a, b) => (b.lastRunAtMs ?? 0) - (a.lastRunAtMs ?? 0))
+    }
+    acc[col.id] = jobs
+    return acc
+  }, {} as Record<KanbanColumn, CronJob[]>)
 
   return (
     <div>
