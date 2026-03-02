@@ -30,7 +30,7 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
   function handleSave() { if (editingId) { onUpdateTemplate?.(editingId, { ...form, skillName: form.skillName || null, preInstructions: form.preInstructions || null, deliveryRecipient: form.deliveryRecipient || null }) } else { onCreateTemplate?.({ ...form, skillName: form.skillName || null, preInstructions: form.preInstructions || null, deliveryRecipient: form.deliveryRecipient || null }) }; setModalOpen(false) }
   function handleRunNow(id: string) { setRunningId(id); onRunNow?.(id); setTimeout(() => setRunningId(null), 2000); setOpenMenu(null) }
 
-  const assembledInstructions = [globalPreInstructions, form.preInstructions, form.skillName ? `Utilise le skill ${form.skillName}, lis attentivement ses instructions et exécute-les.` : null, form.instructions].filter(Boolean).join('\n\n---\n\n')
+  const assembledInstructions = [globalPreInstructions, form.skillName ? `Utilise le skill ${form.skillName}, lis attentivement ses instructions et exécute-les.` : null, form.instructions].filter(Boolean).join('\n\n---\n\n')
 
   return (
     <div>
