@@ -18,6 +18,7 @@ export interface RawJobState {
   lastStatus: string
   lastDurationMs: number
   consecutiveErrors?: number
+  runningAtMs?: number
   lastRunStatus?: string
   lastDelivered?: boolean
   lastDeliveryStatus?: string

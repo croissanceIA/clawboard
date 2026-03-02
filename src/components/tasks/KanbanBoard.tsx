@@ -19,6 +19,9 @@ const COLUMNS: { id: KanbanColumn; label: string; icon: React.ReactNode; color: 
 function getColumn(job: CronJob): KanbanColumn {
   if (!job.enabled) return 'pending'
 
+  // En cours d'exécution (runningAtMs set mais pas de résultat final)
+  if (job.runningAtMs && !job.lastStatus) return 'running'
+
   const now = new Date()
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime()
 

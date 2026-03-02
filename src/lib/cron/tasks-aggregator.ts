@@ -25,6 +25,7 @@ function mapRawJobToCronJob(raw: RawJob, templateIdMap: Map<string, string>): Cr
     lastRunAtMs: raw.state.lastRunAtMs || null,
     lastStatus: mapCronStatus(raw.state.lastStatus),
     nextRunAtMs: raw.state.nextRunAtMs || null,
+    runningAtMs: raw.state.runningAtMs || null,
     consecutiveErrors: raw.state.consecutiveErrors ?? 0,
   }
 }

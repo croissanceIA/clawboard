@@ -29,6 +29,7 @@ export interface CronJob {
   lastRunAtMs: number | null;
   lastStatus: CronStatus;
   nextRunAtMs: number | null;
+  runningAtMs: number | null;
   consecutiveErrors: number;
 }
 
