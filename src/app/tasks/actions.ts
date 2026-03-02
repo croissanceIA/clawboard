@@ -1,7 +1,7 @@
 'use server'
 
 import crypto from 'crypto'
-import { exec } from 'child_process'
+import { spawn } from 'child_process'
 import { revalidatePath } from 'next/cache'
 import { db } from '@/lib/db'
 import { templates, preInstructions } from '@/lib/db/schema'
@@ -65,12 +65,16 @@ export async function runNow(templateId: string) {
   const deliverArgs = tpl.deliveryChannel && tpl.deliveryRecipient
     ? ` --deliver --reply-channel ${tpl.deliveryChannel} --reply-to '${tpl.deliveryRecipient}'`
     : ''
-  const cmd = `/opt/homebrew/bin/openclaw agent --agent ${agent} -m '${escaped}'${deliverArgs}`
-  exec(cmd, { env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` } }, (error, stdout, stderr) => {
-    if (error) console.error('[runNow] exec error:', error.message)
-    if (stderr) console.error('[runNow] stderr:', stderr)
-    if (stdout) console.log('[runNow] stdout:', stdout)
+  const args = ['agent', '--agent', agent, '-m', parts]
+  if (tpl.deliveryChannel && tpl.deliveryRecipient) {
+    args.push('--deliver', '--reply-channel', tpl.deliveryChannel, '--reply-to', tpl.deliveryRecipient)
+  }
+  const child = spawn('/opt/homebrew/bin/openclaw', args, {
+    detached: true,
+    stdio: 'ignore',
+    env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` },
   })
+  child.unref()
 
   // Increment execution count
   db.update(templates)
