@@ -61,7 +61,7 @@ export async function runNow(templateId: string) {
   ].filter(Boolean).join('\n\n---\n\n')
 
   const escaped = parts.replace(/'/g, "'\\''")
-  exec(`openclaw agent '${escaped}'`)
+  exec(`/opt/homebrew/bin/openclaw agent -m '${escaped}'`, { env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` } })
 
   // Increment execution count
   db.update(templates)
