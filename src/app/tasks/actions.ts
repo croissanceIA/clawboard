@@ -62,7 +62,10 @@ export async function runNow(templateId: string) {
 
   const escaped = parts.replace(/'/g, "'\\''")
   const agent = tpl.agentId || 'main'
-  const cmd = `/opt/homebrew/bin/openclaw agent --agent ${agent} -m '${escaped}'`
+  const deliverArgs = tpl.deliveryChannel && tpl.deliveryRecipient
+    ? ` --deliver --reply-channel ${tpl.deliveryChannel} --reply-to '${tpl.deliveryRecipient}'`
+    : ''
+  const cmd = `/opt/homebrew/bin/openclaw agent --agent ${agent} -m '${escaped}'${deliverArgs}`
   exec(cmd, { env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` } }, (error, stdout, stderr) => {
     if (error) console.error('[runNow] exec error:', error.message)
     if (stderr) console.error('[runNow] stderr:', stderr)
