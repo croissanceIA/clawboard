@@ -1,0 +1,13 @@
+/* Design Tokens for ClawBoard */
+
+:root {
+  /* Colors */
+  --color-primary: theme(colors.blue.600);
+  --color-secondary: theme(colors.amber.500);
+  --color-neutral: theme(colors.zinc.500);
+
+  /* Typography */
+  --font-heading: 'Inter', system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}

@@ -1,0 +1,15 @@
+{
+  "templates": [
+    {"id": "tpl-001", "name": "Synthèse quotidienne", "skillName": "daily-synthesis", "instructions": "Analyse les dernières 24h d'activité dans BRAIN/.", "preInstructions": null, "agentId": "main", "deliveryChannel": "discord", "deliveryRecipient": "1234567890", "model": "openrouter/anthropic/claude-sonnet-4", "cronJobId": "twitter-trends-daily", "executionCount": 47, "createdAt": "2026-01-15T10:00:00Z", "updatedAt": "2026-02-27T08:30:00Z"},
+    {"id": "tpl-002", "name": "Backup OpenClaw Drive", "skillName": "backup-drive", "instructions": "Exécute un backup complet du répertoire OpenClaw vers Google Drive.", "preInstructions": "Ne pas envoyer de notification Discord.", "agentId": "main", "deliveryChannel": "discord", "deliveryRecipient": "9876543210", "model": "openrouter/moonshotai/kimi-k2.5", "cronJobId": "backup-openclaw-drive", "executionCount": 89, "createdAt": "2026-01-10T14:00:00Z", "updatedAt": "2026-02-20T03:15:00Z"}
+  ],
+  "cronJobs": [
+    {"id": "twitter-trends-daily", "templateId": "tpl-001", "cronExpression": "0 7 * * *", "timezone": "Europe/Paris", "enabled": true, "frequencyLabel": "Tous les jours à 7h", "lastRunAtMs": 1740726000000, "lastStatus": "ok", "nextRunAtMs": 1740812400000, "consecutiveErrors": 0},
+    {"id": "backup-openclaw-drive", "templateId": "tpl-002", "cronExpression": "0 3 * * *", "timezone": "Europe/Paris", "enabled": true, "frequencyLabel": "Tous les jours à 3h", "lastRunAtMs": 1740711600000, "lastStatus": "ok", "nextRunAtMs": 1740798000000, "consecutiveErrors": 0}
+  ],
+  "executionLogs": [
+    {"id": "log-001", "cronJobId": "twitter-trends-daily", "templateId": "tpl-001", "stdout": "Synthèse quotidienne générée.", "stderr": "", "exitCode": 0, "durationMs": 45200, "status": "ok", "model": "openrouter/anthropic/claude-sonnet-4", "promptTokens": 1847, "completionTokens": 623, "costUsd": 0.0089, "generationId": "gen-abc123", "executedAt": "2026-02-28T07:00:45Z"}
+  ],
+  "preInstruction": {"content": "## Notification\nAvant de commencer, envoie un message court.\n\n## BRAIN\nTes résultats doivent être écrits dans ~/openclaw/BRAIN/.", "updatedAt": "2026-02-15T14:30:00Z"},
+  "activeTab": "tasks"
+}

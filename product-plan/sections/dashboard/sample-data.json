@@ -1,0 +1,28 @@
+{
+  "stats": {
+    "completedToday": 4,
+    "totalToday": 6,
+    "failedCount": 1,
+    "nextRun": {
+      "taskName": "twitter-trends-daily",
+      "scheduledAt": "2026-02-28T14:00:00Z"
+    },
+    "activeCrons": 3
+  },
+  "costSummary": {
+    "todayUsd": 0.42,
+    "monthUsd": 8.73,
+    "yesterdayUsd": 0.51,
+    "trendPercent": -17.6
+  },
+  "recentExecutions": [
+    {"id": "exec-001", "taskName": "twitter-trends-daily", "cronJobId": "twitter-trends-daily", "status": "ok", "executedAt": "2026-02-28T07:00:12Z", "durationMs": 14320, "costUsd": 0.12, "model": "openrouter/moonshotai/kimi-k2.5"},
+    {"id": "exec-002", "taskName": "backup-openclaw-drive", "cronJobId": "backup-openclaw-drive", "status": "ok", "executedAt": "2026-02-28T03:00:45Z", "durationMs": 8450, "costUsd": 0.08, "model": "openrouter/moonshotai/kimi-k2.5"},
+    {"id": "exec-003", "taskName": "memory-daily", "cronJobId": "memory-daily", "status": "failed", "executedAt": "2026-02-28T02:45:30Z", "durationMs": 3200, "costUsd": 0.03, "model": "openrouter/moonshotai/kimi-k2.5"},
+    {"id": "exec-004", "taskName": "twitter-trends-daily", "cronJobId": "twitter-trends-daily", "status": "ok", "executedAt": "2026-02-27T07:00:08Z", "durationMs": 12100, "costUsd": 0.11, "model": "openrouter/moonshotai/kimi-k2.5"},
+    {"id": "exec-005", "taskName": "backup-openclaw-drive", "cronJobId": "backup-openclaw-drive", "status": "ok", "executedAt": "2026-02-27T03:01:02Z", "durationMs": 9800, "costUsd": 0.09, "model": "openrouter/moonshotai/kimi-k2.5"}
+  ],
+  "failureAlerts": [
+    {"cronJobId": "memory-daily", "taskName": "memory-daily", "lastFailedAt": "2026-02-28T02:45:30Z", "consecutiveErrors": 1, "lastError": "BRAIN directory not found at expected path"}
+  ]
+}

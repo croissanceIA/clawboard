@@ -1,0 +1,24 @@
+{
+  "configSections": [
+    {"id": "general", "title": "General", "entries": [
+      {"key": "PORT", "label": "Application Port", "value": "3333", "description": "Port ClawBoard runs on"},
+      {"key": "OPENCLAW_AGENT", "label": "Default Agent", "value": "main", "description": "Agent used for task dispatch when none is specified"},
+      {"key": "OPENCLAW_TIMEOUT", "label": "Execution Timeout", "value": "600000", "description": "Maximum execution time in milliseconds (10 minutes)"}
+    ]},
+    {"id": "paths", "title": "Paths", "entries": [
+      {"key": "OPENCLAW_CLI", "label": "OpenClaw CLI Path", "value": "openclaw", "description": "Path to the openclaw CLI binary"},
+      {"key": "SKILLS_PATH", "label": "Skills Directory", "value": "~/.openclaw/workspace/skills", "description": "Directory containing agent skill definitions"},
+      {"key": "BRAIN_PATH", "label": "BRAIN Directory", "value": "~/openclaw/BRAIN", "description": "Directory where agent results are written"}
+    ]},
+    {"id": "api-keys", "title": "API Keys & Connections", "entries": [
+      {"key": "OPENROUTER_API_KEY", "label": "OpenRouter API Key", "value": "sk-or-v1-••••••••a3f7", "description": "API key for retrieving execution costs from OpenRouter", "masked": true}
+    ]}
+  ],
+  "connectionStatuses": [
+    {"id": "openclaw-cli", "name": "OpenClaw CLI", "status": "connected", "detail": "v2.4.1", "checkedAt": "2026-02-28T10:32:15Z"},
+    {"id": "openrouter-api", "name": "OpenRouter API", "status": "connected", "detail": "Key valid — 42.17 USD remaining", "checkedAt": "2026-02-28T10:32:16Z"},
+    {"id": "cron-jobs-file", "name": "cron/jobs.json", "status": "connected", "detail": "Read/write OK — 4 jobs found", "checkedAt": "2026-02-28T10:32:15Z"},
+    {"id": "brain-path", "name": "BRAIN Directory", "status": "error", "detail": "Directory not found", "checkedAt": "2026-02-28T10:32:15Z"}
+  ],
+  "envFilePath": "/Users/naier/.env.local"
+}

@@ -1,0 +1,31 @@
+{
+  "taskDetail": {
+    "id": "cron-twitter-trends",
+    "name": "Twitter Trends Daily",
+    "status": "completed",
+    "agent": {"id": "main", "name": "Main Agent", "avatarUrl": null},
+    "templateId": "tpl-twitter-trends",
+    "templateName": "Synthèse Twitter Trends",
+    "cronExpression": "0 7 * * *",
+    "frequencyLabel": "Tous les jours à 7h",
+    "timezone": "Europe/Paris",
+    "enabled": true,
+    "isRecurring": true,
+    "scheduledAt": "2026-02-28T07:00:00Z",
+    "createdAt": "2026-01-15T10:30:00Z",
+    "completedAt": "2026-02-28T07:04:32Z",
+    "lastRunAtMs": 1740726272000,
+    "nextRunAtMs": 1740812400000,
+    "consecutiveErrors": 0,
+    "instructions": "Analyse les tendances Twitter France du jour et produis une synthèse structurée.",
+    "model": "openrouter/anthropic/claude-sonnet-4"
+  },
+  "activityEvents": [
+    {"id": "evt-001", "type": "created", "description": "Tâche créée — Créée depuis le modèle", "timestamp": "2026-01-15T10:30:00Z"},
+    {"id": "evt-004", "type": "dispatched", "description": "Dispatchée à l'agent Main Agent", "timestamp": "2026-02-28T07:00:00Z"},
+    {"id": "evt-006", "type": "completed", "description": "Terminée — Exécution réussie en 4m 32s", "timestamp": "2026-02-28T07:04:32Z"}
+  ],
+  "executionRuns": [
+    {"id": "exec-028", "status": "ok", "stdout": "Top 10 Tendances France analysées.", "stderr": "", "exitCode": 0, "durationMs": 272000, "model": "openrouter/anthropic/claude-sonnet-4", "promptTokens": 3420, "completionTokens": 1890, "costUsd": 0.0234, "generationId": "gen-abc123xyz", "executedAt": "2026-02-28T07:00:00Z"}
+  ]
+}
