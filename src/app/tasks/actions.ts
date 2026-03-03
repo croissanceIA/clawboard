@@ -242,6 +242,14 @@ export async function updateSchedule(
   if (updates.enabled !== undefined) job.enabled = updates.enabled
   job.updatedAtMs = Date.now()
 
+  // Recalculate next run time when expression or timezone changes
+  if (updates.cronExpression !== undefined || updates.timezone !== undefined) {
+    try {
+      const interval = CronExpressionParser.parse(job.schedule.expr, { tz: job.schedule.tz })
+      job.state.nextRunAtMs = interval.next().getTime()
+    } catch { /* keep existing nextRunAtMs */ }
+  }
+
   writeJobs(jobs)
   revalidatePath('/tasks')
 }
