@@ -7,6 +7,15 @@ import { db } from '@/lib/db'
 import { templates as templatesTable } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
+function buildInstructions(tpl: { instructions: string; skillName: string | null } | undefined, fallbackMessage: string): string {
+  if (!tpl) return fallbackMessage
+  const parts = [
+    tpl.instructions || null,
+    tpl.skillName ? `Skill : ${tpl.skillName}` : null,
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join('\n\n') : fallbackMessage
+}
+
 function deriveStatus(enabled: boolean, lastStatus: string, runs: RawRunLine[]): TaskStatus {
   if (!enabled) return 'disabled'
   // Check if a "dispatched/running" line exists without a subsequent "finished" line
@@ -57,7 +66,7 @@ export function aggregateTaskDetail(cronJobId: string): {
     lastRunAtMs: raw.state.lastRunAtMs || null,
     nextRunAtMs: raw.state.nextRunAtMs || null,
     consecutiveErrors: raw.state.consecutiveErrors ?? 0,
-    instructions: tpl?.instructions ?? raw.payload.message,
+    instructions: buildInstructions(tpl, raw.payload.message),
     model: tpl?.model ?? raw.payload.model ?? 'unknown',
   }
 
