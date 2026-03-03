@@ -51,6 +51,7 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
             <div className="mt-4 flex flex-wrap gap-1.5">
               {tpl.skipPreInstructions && <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"><ShieldOff className="size-3" />Sans pré-instructions</span>}
               {tpl.skillName && <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"><Zap className="size-3" />{tpl.skillName}</span>}
+              {tpl.model && <span className="inline-flex items-center gap-1 rounded-md bg-violet-50 px-2 py-0.5 text-[11px] font-medium text-violet-600 dark:bg-violet-900/30 dark:text-violet-400">{tpl.model.split('/').pop()}</span>}
               <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{tpl.agentId}</span>
               <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{tpl.deliveryChannel}</span>
             </div>
