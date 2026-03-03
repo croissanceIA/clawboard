@@ -14,8 +14,6 @@ export interface DashboardStats {
 export interface CostSummary {
   todayUsd: number
   monthUsd: number
-  yesterdayUsd: number
-  trendPercent: number
 }
 
 export interface RecentExecution {

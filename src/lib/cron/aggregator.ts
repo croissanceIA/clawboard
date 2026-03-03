@@ -31,14 +31,12 @@ function buildJobNameMap(jobs: RawJob[]): Map<string, string> {
   return map
 }
 
-function computeRunCosts(allRuns: Map<string, RawRunLine[]>) {
+function computeRunCosts(allRuns: Map<string, RawRunLine[]>): CostSummary {
   const now = new Date()
   const todayStart = startOfDay(now).getTime()
-  const yesterdayStart = startOfDay(new Date(now.getTime() - 86400000)).getTime()
   const monthStart = startOfMonth(now).getTime()
 
   let todayUsd = 0
-  let yesterdayUsd = 0
   let monthUsd = 0
 
   for (const [, runs] of allRuns) {
@@ -46,16 +44,11 @@ function computeRunCosts(allRuns: Map<string, RawRunLine[]>) {
       const cost = computeCostUsd(run.model, run.usage)
       if (cost === 0) continue
       if (run.ts >= todayStart) todayUsd += cost
-      if (run.ts >= yesterdayStart && run.ts < todayStart) yesterdayUsd += cost
       if (run.ts >= monthStart) monthUsd += cost
     }
   }
 
-  const trendPercent = yesterdayUsd > 0
-    ? ((todayUsd - yesterdayUsd) / yesterdayUsd) * 100
-    : 0
-
-  return { todayUsd, yesterdayUsd, monthUsd, trendPercent } satisfies CostSummary
+  return { todayUsd, monthUsd }
 }
 
 function computeStats(jobs: RawJob[], allRuns: Map<string, RawRunLine[]>): DashboardStats {
@@ -142,13 +135,7 @@ function buildFailureAlerts(jobs: RawJob[], allRuns: Map<string, RawRunLine[]>):
 
 async function getCostSummaryWithFallback(allRuns: Map<string, RawRunLine[]>): Promise<CostSummary> {
   try {
-    const orSummary = await getOpenRouterCostSummary()
-    // OpenRouter doesn't provide yesterday data — compute trend from local runs
-    const localCosts = computeRunCosts(allRuns)
-    const trendPercent = localCosts.yesterdayUsd > 0
-      ? ((orSummary.todayUsd - localCosts.yesterdayUsd) / localCosts.yesterdayUsd) * 100
-      : 0
-    return { ...orSummary, yesterdayUsd: localCosts.yesterdayUsd, trendPercent }
+    return await getOpenRouterCostSummary()
   } catch {
     return computeRunCosts(allRuns)
   }

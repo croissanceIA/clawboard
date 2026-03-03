@@ -44,11 +44,5 @@ async function getKeyUsage(): Promise<AuthKeyUsage> {
 export async function getOpenRouterCostSummary(): Promise<CostSummary> {
   const data = await getKeyUsage()
 
-  const todayUsd = data.usage_daily
-  const monthUsd = data.usage_monthly
-  // No yesterday data available from this endpoint
-  const yesterdayUsd = 0
-  const trendPercent = 0
-
-  return { todayUsd, yesterdayUsd, monthUsd, trendPercent }
+  return { todayUsd: data.usage_daily, monthUsd: data.usage_monthly }
 }
