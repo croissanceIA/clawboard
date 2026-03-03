@@ -17,7 +17,7 @@ export function TaskDetailClient({ task, activityEvents, executionRuns }: TaskDe
   const [activeExecutionId, setActiveExecutionId] = useState<string | null>(
     executionRuns[0]?.id ?? null
   )
-  const [, startTransition] = useTransition()
+  const [isPending, startTransition] = useTransition()
 
   function withRefresh(fn: () => Promise<void>) {
     startTransition(async () => {
@@ -34,6 +34,7 @@ export function TaskDetailClient({ task, activityEvents, executionRuns }: TaskDe
       activeExecutionId={activeExecutionId}
       onSelectExecution={setActiveExecutionId}
       onNavigateBack={() => router.push('/tasks')}
+      isRunning={isPending}
       onRunAgain={() => withRefresh(() => runAgainTask(task.id))}
       onEditTask={(_taskId: string, updates: TaskEditPayload) =>
         withRefresh(() => editTask(task.id, updates))

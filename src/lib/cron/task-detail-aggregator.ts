@@ -1,13 +1,17 @@
 import type { TaskDetail, TaskStatus, ActivityEvent, ExecutionRun } from '@/components/task-detail/types'
 import { readJobs, readAllRuns } from './reader'
+import type { RawRunLine } from './types'
 import { computeCostUsd } from './pricing'
 import { frequencyLabel } from './utils'
 import { db } from '@/lib/db'
 import { templates as templatesTable } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 
-function deriveStatus(enabled: boolean, lastStatus: string): TaskStatus {
+function deriveStatus(enabled: boolean, lastStatus: string, runs: RawRunLine[]): TaskStatus {
   if (!enabled) return 'disabled'
+  // Check if a "dispatched/running" line exists without a subsequent "finished" line
+  const sorted = [...runs].sort((a, b) => b.ts - a.ts)
+  if (sorted.length > 0 && sorted[0].status === 'running') return 'running'
   if (lastStatus === 'ok') return 'completed'
   if (lastStatus === 'error') return 'failed'
   return 'pending'
@@ -25,8 +29,12 @@ export function aggregateTaskDetail(cronJobId: string): {
   // Look up linked template
   const tpl = db.select().from(templatesTable).where(eq(templatesTable.cronJobId, cronJobId)).get()
 
+  // Read run lines early (needed for status derivation)
+  const allRuns = readAllRuns()
+  const jobRuns = allRuns.get(cronJobId) ?? []
+
   // Derive status
-  const status = deriveStatus(raw.enabled, raw.state.lastStatus)
+  const status = deriveStatus(raw.enabled, raw.state.lastStatus, jobRuns)
 
   // Build TaskDetail
   const task: TaskDetail = {
@@ -53,18 +61,14 @@ export function aggregateTaskDetail(cronJobId: string): {
     model: tpl?.model ?? raw.payload.model ?? 'unknown',
   }
 
-  // Build execution runs from raw run lines
-  const allRuns = readAllRuns()
-  const jobRuns = allRuns.get(cronJobId) ?? []
-
   const executionRuns: ExecutionRun[] = jobRuns
     .sort((a, b) => b.ts - a.ts) // newest first
     .map((run) => ({
       id: `${cronJobId}-${run.ts}-${run.durationMs}`,
-      status: run.status === 'ok' ? ('ok' as const) : ('failed' as const),
+      status: run.status === 'ok' ? ('ok' as const) : run.status === 'running' ? ('running' as const) : ('failed' as const),
       stdout: run.summary ?? '',
       stderr: run.error ?? '',
-      exitCode: run.status === 'ok' ? 0 : 1,
+      exitCode: run.status === 'ok' ? 0 : run.status === 'running' ? -1 : 1,
       durationMs: run.durationMs,
       model: run.model ?? 'unknown',
       promptTokens: run.usage?.input_tokens ?? null,

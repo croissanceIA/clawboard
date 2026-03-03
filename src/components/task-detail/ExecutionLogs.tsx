@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CheckCircle2, XCircle, Copy, Clock, Cpu, DollarSign } from 'lucide-react'
+import { CheckCircle2, XCircle, Loader2, Copy, Clock, Cpu, DollarSign } from 'lucide-react'
 import type { ExecutionRun } from './types'
 
 function formatDate(iso: string): string { return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }) }
@@ -22,11 +22,12 @@ export function ExecutionLogs({ runs, activeRunId, onSelectRun, onCopyLogs }: Ex
       <div className="flex gap-1 overflow-x-auto border-b border-zinc-100 px-3 pt-2 dark:border-zinc-800">
         {runs.map((run) => {
           const isActive = run.id === activeRun.id
+          const isRunning = run.status === 'running'
           const isFailed = run.status === 'failed'
           return (
             <button key={run.id} onClick={() => onSelectRun?.(run.id)} className={`flex shrink-0 items-center gap-1.5 rounded-t-lg px-3 py-2 text-xs font-medium transition-colors ${isActive ? 'bg-zinc-50 text-zinc-900 dark:bg-zinc-800 dark:text-zinc-100' : 'text-zinc-400 hover:text-zinc-600 dark:text-zinc-500 dark:hover:text-zinc-300'}`}>
-              {isFailed ? <XCircle className="size-3 text-red-500" /> : <CheckCircle2 className="size-3 text-emerald-500" />}
-              {formatDate(run.executedAt)}
+              {isRunning ? <Loader2 className="size-3 animate-spin text-blue-500" /> : isFailed ? <XCircle className="size-3 text-red-500" /> : <CheckCircle2 className="size-3 text-emerald-500" />}
+              {isRunning ? 'En cours…' : formatDate(run.executedAt)}
             </button>
           )
         })}

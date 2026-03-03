@@ -50,7 +50,7 @@ export interface ActivityEvent {
   timestamp: string;
 }
 
-export type ExecutionStatus = "ok" | "failed";
+export type ExecutionStatus = "ok" | "failed" | "running";
 
 export interface ExecutionRun {
   id: string;
@@ -85,6 +85,7 @@ export interface TaskDetailProps {
   executionRuns: ExecutionRun[];
   activeExecutionId: string | null;
   onSelectExecution?: (executionId: string) => void;
+  isRunning?: boolean;
   onRunAgain?: (taskId: string) => void;
   onEditTask?: (taskId: string, updates: TaskEditPayload) => void;
   onArchiveTask?: (taskId: string) => void;

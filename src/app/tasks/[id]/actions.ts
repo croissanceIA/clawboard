@@ -46,6 +46,19 @@ export async function runAgainTask(cronJobId: string) {
 
   const startMs = Date.now()
 
+  // Write immediate "dispatched" line so the UI reflects the launch
+  appendRun(cronJobId, {
+    ts: startMs,
+    jobId: cronJobId,
+    action: 'dispatched',
+    status: 'running',
+    summary: 'Exécution lancée manuellement',
+    runAtMs: startMs,
+    durationMs: 0,
+    model,
+    source: 'clawboard-manual',
+  })
+
   const child = spawn('/opt/homebrew/bin/openclaw', args, {
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],

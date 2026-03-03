@@ -96,6 +96,19 @@ export async function runNow(templateId: string) {
   const jobId = tpl.cronJobId || `clawboard-manual-${tpl.id}`
   const startMs = Date.now()
 
+  // Write immediate "dispatched" line so the UI reflects the launch
+  appendRun(jobId, {
+    ts: startMs,
+    jobId,
+    action: 'dispatched',
+    status: 'running',
+    summary: 'Exécution lancée manuellement',
+    runAtMs: startMs,
+    durationMs: 0,
+    model: tpl.model || undefined,
+    source: 'clawboard-manual',
+  })
+
   const child = spawn('/opt/homebrew/bin/openclaw', args, {
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],

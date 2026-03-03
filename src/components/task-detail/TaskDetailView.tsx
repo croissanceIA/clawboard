@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { ArrowLeft, Play, Pencil, Archive, Trash2, Bot, Calendar, Clock, Repeat, FileText } from 'lucide-react'
+import { ArrowLeft, Play, Loader2, Pencil, Archive, Trash2, Bot, Calendar, Clock, Repeat, FileText } from 'lucide-react'
 import type { TaskDetailProps, TaskStatus } from './types'
 import { ActivityTimeline } from './ActivityTimeline'
 import { ExecutionLogs } from './ExecutionLogs'
@@ -20,7 +20,7 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
-export function TaskDetailView({ task, activityEvents, executionRuns, activeExecutionId, onSelectExecution, onRunAgain, onEditTask, onArchiveTask, onDeleteTask, onCopyLogs, onNavigateBack }: TaskDetailProps) {
+export function TaskDetailView({ task, activityEvents, executionRuns, activeExecutionId, onSelectExecution, isRunning, onRunAgain, onEditTask, onArchiveTask, onDeleteTask, onCopyLogs, onNavigateBack }: TaskDetailProps) {
   const [editOpen, setEditOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const badge = statusBadge[task.status] ?? statusBadge.planned
@@ -37,7 +37,7 @@ export function TaskDetailView({ task, activityEvents, executionRuns, activeExec
           {task.templateName && <p className="mt-1 text-sm text-zinc-400 dark:text-zinc-500">Modèle : {task.templateName}</p>}
         </div>
         <div className="flex shrink-0 gap-2">
-          <button onClick={() => onRunAgain?.(task.id)} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600"><Play className="size-3.5" />Relancer</button>
+          <button onClick={() => onRunAgain?.(task.id)} disabled={isRunning} className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed dark:bg-blue-500 dark:hover:bg-blue-600">{isRunning ? <><Loader2 className="size-3.5 animate-spin" />Lancement…</> : <><Play className="size-3.5" />Relancer</>}</button>
           <button onClick={() => setEditOpen(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"><Pencil className="size-3.5" /><span className="hidden sm:inline">Modifier</span></button>
           <button onClick={() => onArchiveTask?.(task.id)} className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700"><Archive className="size-3.5" /><span className="hidden sm:inline">Archiver</span></button>
           <button onClick={() => setDeleteConfirm(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:border-red-800/50 dark:bg-zinc-800 dark:text-red-400 dark:hover:bg-red-950/30"><Trash2 className="size-3.5" /><span className="hidden sm:inline">Supprimer</span></button>
