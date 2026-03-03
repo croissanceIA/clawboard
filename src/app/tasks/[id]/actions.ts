@@ -16,7 +16,7 @@ export async function runAgainTask(cronJobId: string) {
   if (tpl) {
     const pre = db.select().from(preInstructions).where(eq(preInstructions.id, 1)).get()
     const parts = [
-      pre?.content,
+      tpl.skipPreInstructions ? null : pre?.content,
       tpl.preInstructions,
       tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
       tpl.instructions,

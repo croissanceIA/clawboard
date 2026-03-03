@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, MoreHorizontal, Play, Pencil, Trash2, X, Zap, Hash, Eye, Loader2 } from 'lucide-react'
+import { Plus, MoreHorizontal, Play, Pencil, Trash2, X, Zap, Hash, Eye, Loader2, ShieldOff } from 'lucide-react'
 import type { Template } from '@/components/tasks/types'
 
 interface TemplatesGridProps {
@@ -14,7 +14,8 @@ interface TemplatesGridProps {
 const EMPTY_FORM = {
   name: '', skillName: '', instructions: '', preInstructions: '',
   agentId: 'main', deliveryChannel: 'discord', deliveryRecipient: '',
-  model: 'openrouter/anthropic/claude-sonnet-4', cronJobId: null as string | null,
+  model: 'openrouter/anthropic/claude-sonnet-4', skipPreInstructions: false,
+  cronJobId: null as string | null,
 }
 
 export function TemplatesGrid({ templates, globalPreInstructions, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, onRunNow }: TemplatesGridProps) {
@@ -26,11 +27,11 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
   const [runningId, setRunningId] = useState<string | null>(null)
 
   function openCreate() { setEditingId(null); setForm(EMPTY_FORM); setShowPreview(false); setModalOpen(true) }
-  function openEdit(tpl: Template) { setEditingId(tpl.id); setForm({ name: tpl.name, skillName: tpl.skillName ?? '', instructions: tpl.instructions, preInstructions: tpl.preInstructions ?? '', agentId: tpl.agentId, deliveryChannel: tpl.deliveryChannel, deliveryRecipient: tpl.deliveryRecipient ?? '', model: tpl.model, cronJobId: tpl.cronJobId }); setShowPreview(false); setModalOpen(true); setOpenMenu(null) }
-  function handleSave() { if (editingId) { onUpdateTemplate?.(editingId, { ...form, skillName: form.skillName || null, preInstructions: form.preInstructions || null, deliveryRecipient: form.deliveryRecipient || null }) } else { onCreateTemplate?.({ ...form, skillName: form.skillName || null, preInstructions: form.preInstructions || null, deliveryRecipient: form.deliveryRecipient || null }) }; setModalOpen(false) }
+  function openEdit(tpl: Template) { setEditingId(tpl.id); setForm({ name: tpl.name, skillName: tpl.skillName ?? '', instructions: tpl.instructions, preInstructions: tpl.preInstructions ?? '', agentId: tpl.agentId, deliveryChannel: tpl.deliveryChannel, deliveryRecipient: tpl.deliveryRecipient ?? '', model: tpl.model, skipPreInstructions: tpl.skipPreInstructions ?? false, cronJobId: tpl.cronJobId }); setShowPreview(false); setModalOpen(true); setOpenMenu(null) }
+  function handleSave() { const payload = { ...form, skillName: form.skillName || null, preInstructions: form.preInstructions || null, deliveryRecipient: form.deliveryRecipient || null }; if (editingId) { onUpdateTemplate?.(editingId, payload) } else { onCreateTemplate?.(payload) }; setModalOpen(false) }
   function handleRunNow(id: string) { setRunningId(id); onRunNow?.(id); setTimeout(() => setRunningId(null), 2000); setOpenMenu(null) }
 
-  const assembledInstructions = [globalPreInstructions, form.skillName ? `Utilise le skill ${form.skillName}, lis attentivement ses instructions et exécute-les.` : null, form.instructions].filter(Boolean).join('\n\n---\n\n')
+  const assembledInstructions = [form.skipPreInstructions ? null : globalPreInstructions, form.skillName ? `Utilise le skill ${form.skillName}, lis attentivement ses instructions et exécute-les.` : null, form.instructions].filter(Boolean).join('\n\n---\n\n')
 
   return (
     <div>
@@ -48,6 +49,7 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
             <h3 className="pr-8 text-sm font-semibold text-zinc-900 dark:text-zinc-100">{tpl.name}</h3>
             <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-zinc-500 dark:text-zinc-400">{tpl.instructions}</p>
             <div className="mt-4 flex flex-wrap gap-1.5">
+              {tpl.skipPreInstructions && <span className="inline-flex items-center gap-1 rounded-md bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:bg-amber-950/50 dark:text-amber-400"><ShieldOff className="size-3" />Sans pré-instructions</span>}
               {tpl.skillName && <span className="inline-flex items-center gap-1 rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-medium text-blue-600 dark:bg-blue-950/50 dark:text-blue-400"><Zap className="size-3" />{tpl.skillName}</span>}
               <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{tpl.agentId}</span>
               <span className="inline-flex items-center gap-1 rounded-md bg-zinc-100 px-2 py-0.5 text-[11px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{tpl.deliveryChannel}</span>
@@ -76,6 +78,7 @@ export function TemplatesGrid({ templates, globalPreInstructions, onCreateTempla
               </div>
               <label className="block"><span className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Destinataire <span className="text-zinc-400">(ID du canal)</span></span><input value={form.deliveryRecipient} onChange={(e) => setForm({ ...form, deliveryRecipient: e.target.value })} className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-blue-700 dark:focus:ring-blue-950/50" placeholder="e.g. 1234567890" /></label>
               <label className="block"><span className="mb-1 block text-xs font-medium text-zinc-700 dark:text-zinc-300">Modèle IA</span><input value={form.model} onChange={(e) => setForm({ ...form, model: e.target.value })} className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus:border-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100 dark:focus:border-blue-700 dark:focus:ring-blue-950/50" placeholder="e.g. openrouter/anthropic/claude-sonnet-4" /></label>
+              <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" checked={form.skipPreInstructions} onChange={(e) => setForm({ ...form, skipPreInstructions: e.target.checked })} className="size-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500 dark:border-zinc-600 dark:bg-zinc-800" /><span className="text-xs text-zinc-700 dark:text-zinc-300">Désactiver les pré-instructions globales pour ce modèle</span></label>
               <div>
                 <button onClick={() => setShowPreview(!showPreview)} className="flex items-center gap-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400"><Eye className="size-3.5" />{showPreview ? 'Masquer' : 'Aperçu'} des instructions assemblées</button>
                 {showPreview && <pre className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs leading-relaxed text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{assembledInstructions || 'Aucune instruction pour le moment.'}</pre>}

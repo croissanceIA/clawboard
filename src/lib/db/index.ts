@@ -22,6 +22,7 @@ function initDb() {
       delivery_channel TEXT NOT NULL DEFAULT 'discord',
       delivery_recipient TEXT,
       model TEXT NOT NULL DEFAULT 'openrouter/anthropic/claude-sonnet-4',
+      skip_pre_instructions INTEGER NOT NULL DEFAULT 0,
       cron_job_id TEXT,
       execution_count INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
@@ -37,6 +38,9 @@ function initDb() {
     INSERT OR IGNORE INTO pre_instructions (id, content, updated_at)
     VALUES (1, '', '${new Date().toISOString()}');
   `)
+
+  // Migration: add skip_pre_instructions column (safe for existing DBs)
+  try { sqlite.exec(`ALTER TABLE templates ADD COLUMN skip_pre_instructions INTEGER NOT NULL DEFAULT 0`) } catch { /* column already exists */ }
 
   return drizzle(sqlite, { schema })
 }

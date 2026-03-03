@@ -11,9 +11,9 @@ import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
 import type { Template } from '@/components/tasks/types'
 import type { RawJob } from '@/lib/cron/types'
 
-function buildMessage(tpl: { preInstructions: string | null; skillName: string | null; instructions: string }, globalPre?: string | null): string {
+function buildMessage(tpl: { preInstructions: string | null; skillName: string | null; instructions: string; skipPreInstructions?: number | boolean }, globalPre?: string | null): string {
   return [
-    globalPre,
+    tpl.skipPreInstructions ? null : globalPre,
     tpl.preInstructions,
     tpl.skillName ? `Utilise le skill ${tpl.skillName}, lis attentivement ses instructions et exécute-les.` : null,
     tpl.instructions,
@@ -52,6 +52,7 @@ export async function createTemplate(
     deliveryChannel: data.deliveryChannel,
     deliveryRecipient: data.deliveryRecipient,
     model: data.model,
+    skipPreInstructions: data.skipPreInstructions ? 1 : 0,
     cronJobId: data.cronJobId,
     executionCount: 0,
     createdAt: now,
@@ -62,9 +63,9 @@ export async function createTemplate(
 
 export async function updateTemplate(id: string, updates: Partial<Template>) {
   const now = new Date().toISOString()
-  const { id: _id, createdAt: _ca, executionCount: _ec, ...rest } = updates
+  const { id: _id, createdAt: _ca, executionCount: _ec, skipPreInstructions, ...rest } = updates
   db.update(templates)
-    .set({ ...rest, updatedAt: now })
+    .set({ ...rest, ...(skipPreInstructions !== undefined && { skipPreInstructions: skipPreInstructions ? 1 : 0 }), updatedAt: now })
     .where(eq(templates.id, id))
     .run()
 

@@ -48,6 +48,7 @@ export function aggregateTasks(): {
     deliveryChannel: t.deliveryChannel,
     deliveryRecipient: t.deliveryRecipient,
     model: t.model,
+    skipPreInstructions: !!t.skipPreInstructions,
     cronJobId: t.cronJobId,
     executionCount: t.executionCount,
     createdAt: t.createdAt,
