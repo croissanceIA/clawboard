@@ -142,7 +142,13 @@ function buildFailureAlerts(jobs: RawJob[], allRuns: Map<string, RawRunLine[]>):
 
 async function getCostSummaryWithFallback(allRuns: Map<string, RawRunLine[]>): Promise<CostSummary> {
   try {
-    return await getOpenRouterCostSummary()
+    const orSummary = await getOpenRouterCostSummary()
+    // OpenRouter doesn't provide yesterday data — compute trend from local runs
+    const localCosts = computeRunCosts(allRuns)
+    const trendPercent = localCosts.yesterdayUsd > 0
+      ? ((orSummary.todayUsd - localCosts.yesterdayUsd) / localCosts.yesterdayUsd) * 100
+      : 0
+    return { ...orSummary, yesterdayUsd: localCosts.yesterdayUsd, trendPercent }
   } catch {
     return computeRunCosts(allRuns)
   }
