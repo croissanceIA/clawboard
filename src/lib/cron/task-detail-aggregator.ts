@@ -18,9 +18,14 @@ function buildInstructions(tpl: { instructions: string; skillName: string | null
 
 function deriveStatus(enabled: boolean, lastStatus: string, runs: RawRunLine[]): TaskStatus {
   if (!enabled) return 'disabled'
-  // Check if a "dispatched/running" line exists without a subsequent "finished" line
-  const sorted = [...runs].sort((a, b) => b.ts - a.ts)
-  if (sorted.length > 0 && sorted[0].status === 'running') return 'running'
+  // Check if a "dispatched/running" line exists without a corresponding "finished" line
+  const finishedRunAts = new Set(
+    runs.filter((r) => r.action === 'finished' || (r.status !== 'running' && r.durationMs > 0)).map((r) => r.runAtMs)
+  )
+  const hasActiveRun = runs.some(
+    (r) => r.status === 'running' && (!r.runAtMs || !finishedRunAts.has(r.runAtMs))
+  )
+  if (hasActiveRun) return 'running'
   if (lastStatus === 'ok') return 'completed'
   if (lastStatus === 'error') return 'failed'
   return 'pending'
@@ -70,7 +75,15 @@ export function aggregateTaskDetail(cronJobId: string): {
     model: tpl?.model ?? raw.payload.model ?? 'unknown',
   }
 
-  const executionRuns: ExecutionRun[] = jobRuns
+  // Deduplicate: when a "finished" line exists for a given runAtMs, drop the "dispatched" (running) line
+  const finishedRunAts = new Set(
+    jobRuns.filter((r) => r.action === 'finished' || (r.status !== 'running' && r.durationMs > 0)).map((r) => r.runAtMs)
+  )
+  const deduped = jobRuns.filter(
+    (r) => !(r.status === 'running' && r.runAtMs && finishedRunAts.has(r.runAtMs))
+  )
+
+  const executionRuns: ExecutionRun[] = deduped
     .sort((a, b) => b.ts - a.ts) // newest first
     .map((run) => ({
       id: `${cronJobId}-${run.ts}-${run.durationMs}`,

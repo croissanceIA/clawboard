@@ -70,12 +70,19 @@ export function aggregateTasks(): {
   // Build job name map
   const jobNameMap = new Map(rawJobs.map((j) => [j.id, j.name]))
 
-  // Map execution logs
+  // Map execution logs (deduplicate dispatched/finished pairs)
   const allRuns = readAllRuns()
   const executionLogs: ExecutionLog[] = []
   for (const [jobId, runs] of allRuns) {
     const tplId = templateIdMap.get(jobId) ?? null
-    for (const run of runs) {
+    // Drop "dispatched" (running) lines when a corresponding "finished" line exists
+    const finishedRunAts = new Set(
+      runs.filter((r) => r.action === 'finished' || (r.status !== 'running' && r.durationMs > 0)).map((r) => r.runAtMs)
+    )
+    const deduped = runs.filter(
+      (r) => !(r.status === 'running' && r.runAtMs && finishedRunAts.has(r.runAtMs))
+    )
+    for (const run of deduped) {
       executionLogs.push({
         id: `${jobId}-${run.ts}-${run.durationMs}`,
         cronJobId: jobId,
