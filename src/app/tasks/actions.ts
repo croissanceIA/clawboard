@@ -8,7 +8,7 @@ import { templates, preInstructions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { CronExpressionParser } from 'cron-parser'
 import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
-import { getConfig } from '@/lib/config'
+import { getOpenclawSpawn } from '@/lib/config'
 import type { Template } from '@/components/tasks/types'
 import type { RawJob } from '@/lib/cron/types'
 
@@ -111,17 +111,17 @@ export async function runNow(templateId: string) {
     source: 'clawboard-manual',
   })
 
-  const cliPath = getConfig().openclawCliPath
-  if (!cliPath) {
+  const spawnCmd = getOpenclawSpawn(args)
+  if (!spawnCmd) {
     appendRun(jobId, {
       ts: Date.now(), jobId, action: 'finished', status: 'error',
-      summary: 'OpenClaw CLI non trouvé. Configurez OPENCLAW_CLI_PATH dans .env.local',
+      summary: 'OpenClaw CLI non trouvé. Configurez OPENCLAW_CLI_PATH ou vérifiez votre installation Docker.',
       runAtMs: startMs, durationMs: 0, model: tpl.model || undefined, source: 'clawboard-manual',
     })
     return
   }
 
-  const child = spawn(cliPath, args, {
+  const child = spawn(spawnCmd.cmd, spawnCmd.args, {
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
   })
