@@ -91,6 +91,7 @@ export interface TasksProps {
   executionLogs: ExecutionLog[];
   preInstruction: PreInstruction;
   activeTab: TabId;
+  templateDefaults?: { agentId: string; deliveryChannel: string; model: string };
   onTabChange?: (tab: TabId) => void;
   onCreateTemplate?: (
     template: Omit<Template, "id" | "executionCount" | "createdAt" | "updatedAt">

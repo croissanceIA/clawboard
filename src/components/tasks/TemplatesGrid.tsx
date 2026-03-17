@@ -2,23 +2,36 @@ import { useState } from 'react'
 import { Plus, MoreHorizontal, Play, Pencil, Trash2, X, Zap, Hash, Eye, Loader2, ShieldOff } from 'lucide-react'
 import type { Template } from '@/components/tasks/types'
 
+interface TemplateDefaults {
+  agentId: string
+  deliveryChannel: string
+  model: string
+}
+
 interface TemplatesGridProps {
   templates: Template[]
   globalPreInstructions?: string
+  defaults?: TemplateDefaults
   onCreateTemplate?: (template: Omit<Template, 'id' | 'executionCount' | 'createdAt' | 'updatedAt'>) => void
   onUpdateTemplate?: (id: string, updates: Partial<Template>) => void
   onDeleteTemplate?: (id: string) => void
   onRunNow?: (templateId: string) => void
 }
 
-const EMPTY_FORM = {
-  name: '', skillName: '', instructions: '', preInstructions: '',
-  agentId: 'main', deliveryChannel: 'discord', deliveryRecipient: '',
-  model: 'openrouter/anthropic/claude-sonnet-4', skipPreInstructions: false,
-  cronJobId: null as string | null,
+const DEFAULT_DEFAULTS: TemplateDefaults = {
+  agentId: 'main',
+  deliveryChannel: 'discord',
+  model: 'openrouter/anthropic/claude-sonnet-4',
 }
 
-export function TemplatesGrid({ templates, globalPreInstructions, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, onRunNow }: TemplatesGridProps) {
+export function TemplatesGrid({ templates, globalPreInstructions, defaults, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, onRunNow }: TemplatesGridProps) {
+  const d = defaults || DEFAULT_DEFAULTS
+  const EMPTY_FORM = {
+    name: '', skillName: '', instructions: '', preInstructions: '',
+    agentId: d.agentId, deliveryChannel: d.deliveryChannel, deliveryRecipient: '',
+    model: d.model, skipPreInstructions: false,
+    cronJobId: null as string | null,
+  }
   const [modalOpen, setModalOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [form, setForm] = useState(EMPTY_FORM)

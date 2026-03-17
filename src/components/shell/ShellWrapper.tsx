@@ -10,7 +10,7 @@ const NAV_ITEMS = [
 ]
 
 const DEFAULT_USER = {
-  name: 'Naier Saidane',
+  name: 'Utilisateur',
   avatarUrl: '/avatar.png',
 }
 

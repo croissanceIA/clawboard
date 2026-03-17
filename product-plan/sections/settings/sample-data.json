@@ -20,5 +20,5 @@
     {"id": "cron-jobs-file", "name": "cron/jobs.json", "status": "connected", "detail": "Read/write OK — 4 jobs found", "checkedAt": "2026-02-28T10:32:15Z"},
     {"id": "brain-path", "name": "BRAIN Directory", "status": "error", "detail": "Directory not found", "checkedAt": "2026-02-28T10:32:15Z"}
   ],
-  "envFilePath": "/Users/naier/.env.local"
+  "envFilePath": ".env.local"
 }

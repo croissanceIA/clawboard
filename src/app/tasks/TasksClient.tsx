@@ -21,9 +21,10 @@ interface TasksClientProps {
   cronJobs: CronJob[]
   executionLogs: ExecutionLog[]
   preInstruction: PreInstruction
+  templateDefaults?: { agentId: string; deliveryChannel: string; model: string }
 }
 
-export function TasksClient({ templates, cronJobs, executionLogs, preInstruction }: TasksClientProps) {
+export function TasksClient({ templates, cronJobs, executionLogs, preInstruction, templateDefaults }: TasksClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabId>('tasks')
   const [, startTransition] = useTransition()
@@ -42,6 +43,7 @@ export function TasksClient({ templates, cronJobs, executionLogs, preInstruction
       executionLogs={executionLogs}
       preInstruction={preInstruction}
       activeTab={activeTab}
+      templateDefaults={templateDefaults}
       onTabChange={setActiveTab}
       onCreateTemplate={(tpl) => withRefresh(() => createTemplate(tpl))}
       onUpdateTemplate={(id, updates) => withRefresh(() => updateTemplate(id, updates))}

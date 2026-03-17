@@ -6,6 +6,7 @@ import { db } from '@/lib/db'
 import { templates, preInstructions } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { readJobs, writeJobs, appendRun } from '@/lib/cron/reader'
+import { getConfig } from '@/lib/config'
 import type { TaskEditPayload } from '@/components/task-detail/types'
 
 export async function runAgainTask(cronJobId: string) {
@@ -59,10 +60,19 @@ export async function runAgainTask(cronJobId: string) {
     source: 'clawboard-manual',
   })
 
-  const child = spawn('/opt/homebrew/bin/openclaw', args, {
+  const cliPath = getConfig().openclawCliPath
+  if (!cliPath) {
+    appendRun(cronJobId, {
+      ts: Date.now(), jobId: cronJobId, action: 'finished', status: 'error',
+      summary: 'OpenClaw CLI non trouvé. Configurez OPENCLAW_CLI_PATH dans .env.local',
+      runAtMs: startMs, durationMs: 0, model, source: 'clawboard-manual',
+    })
+    return
+  }
+
+  const child = spawn(cliPath, args, {
     detached: true,
     stdio: ['ignore', 'pipe', 'pipe'],
-    env: { ...process.env, PATH: `/opt/homebrew/bin:${process.env.PATH}` },
   })
 
   let stdout = ''

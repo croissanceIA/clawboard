@@ -1,12 +1,13 @@
 {
-  "name": "clawboard-scaffold",
+  "name": "clawboard",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "setup": "node bin/setup.js"
   },
   "dependencies": {
     "better-sqlite3": "^12.6.2",

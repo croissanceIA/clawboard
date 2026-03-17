@@ -26,7 +26,7 @@ const TABS: {
 ]
 
 export function TasksPage({
-  templates, cronJobs, executionLogs, preInstruction, activeTab,
+  templates, cronJobs, executionLogs, preInstruction, activeTab, templateDefaults,
   onTabChange, onCreateTemplate, onUpdateTemplate, onDeleteTemplate, onRunNow,
   onToggleSchedule, onCreateSchedule, onUpdateSchedule, onDeleteSchedule,
   onSavePreInstructions, onViewTaskDetail, onFilterArchives,
@@ -59,7 +59,7 @@ export function TasksPage({
       </div>
       <div>
         {activeTab === 'tasks' && <KanbanBoard cronJobs={cronJobs} templates={templates} onViewTaskDetail={onViewTaskDetail} />}
-        {activeTab === 'templates' && <TemplatesGrid templates={templates} globalPreInstructions={preInstruction.content} onCreateTemplate={onCreateTemplate} onUpdateTemplate={onUpdateTemplate} onDeleteTemplate={onDeleteTemplate} onRunNow={onRunNow} />}
+        {activeTab === 'templates' && <TemplatesGrid templates={templates} globalPreInstructions={preInstruction.content} defaults={templateDefaults} onCreateTemplate={onCreateTemplate} onUpdateTemplate={onUpdateTemplate} onDeleteTemplate={onDeleteTemplate} onRunNow={onRunNow} />}
         {activeTab === 'schedules' && <ScheduleTimeline cronJobs={cronJobs} templates={templates} onToggleSchedule={onToggleSchedule} onCreateSchedule={onCreateSchedule} onUpdateSchedule={onUpdateSchedule} onDeleteSchedule={onDeleteSchedule} />}
         {activeTab === 'pre-instructions' && <PreInstructionsEditor preInstruction={preInstruction} onSave={onSavePreInstructions} />}
         {activeTab === 'archives' && <ArchivesTable executionLogs={executionLogs} templates={templates} onFilterArchives={onFilterArchives} />}
