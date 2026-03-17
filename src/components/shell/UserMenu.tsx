@@ -31,8 +31,8 @@ export function UserMenu({ user, collapsed }: UserMenuProps) {
           className="size-7 shrink-0 rounded-full object-cover"
         />
       ) : (
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-blue-100 text-xs font-medium text-blue-700 dark:bg-blue-900/50 dark:text-blue-400">
-          {getInitials(user.name)}
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-full text-base">
+          🦀
         </div>
       )}
       {!collapsed && (

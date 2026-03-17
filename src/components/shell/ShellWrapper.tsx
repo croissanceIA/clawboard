@@ -10,8 +10,7 @@ const NAV_ITEMS = [
 ]
 
 const DEFAULT_USER = {
-  name: 'Utilisateur',
-  avatarUrl: '/avatar.png',
+  name: '',
 }
 
 export function ShellWrapper({ children, costToday }: { children: React.ReactNode; costToday?: string }) {

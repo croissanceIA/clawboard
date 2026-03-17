@@ -60,7 +60,7 @@ After=network.target
 Type=simple
 User=$USER
 WorkingDirectory=/chemin/vers/clawboard
-ExecStart=/usr/bin/npm start
+ExecStart=/usr/bin/npm start -- -H 0.0.0.0
 Restart=on-failure
 Environment=PORT=3000
 
