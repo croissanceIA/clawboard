@@ -94,12 +94,22 @@ export function checkConnections(): ConnectionStatus[] {
     const resolvedWorkspace = workspace.startsWith('~')
       ? path.join(process.env.HOME || '', workspace.slice(1))
       : workspace
+    // Detect Docker: workspace is a container-internal path not accessible from host
+    const isDocker = fs.existsSync(path.join(getOpenClawRoot(), '..', 'docker-compose.yml'))
     if (fs.existsSync(resolvedWorkspace)) {
       statuses.push({
         id: 'workspace',
         name: 'Workspace',
         status: 'connected',
         detail: workspace,
+        checkedAt: now(),
+      })
+    } else if (isDocker) {
+      statuses.push({
+        id: 'workspace',
+        name: 'Workspace',
+        status: 'connected',
+        detail: `${workspace} (Docker container)`,
         checkedAt: now(),
       })
     } else {
@@ -133,8 +143,16 @@ export function getOpenRouterToken(): string | undefined {
   if (!authProfilesPath) return undefined
   const authProfiles = readJsonFile(authProfilesPath) as Record<string, unknown> | null
   const profiles = authProfiles?.profiles as Record<string, unknown> | undefined
-  const openrouterProfile = profiles?.['openrouter:manual'] as Record<string, unknown> | undefined
-  return openrouterProfile?.token as string | undefined
+  if (!profiles) return undefined
+  // Find any openrouter profile (could be openrouter:manual, openrouter:default, etc.)
+  for (const [key, value] of Object.entries(profiles)) {
+    if (key.startsWith('openrouter:') && value && typeof value === 'object') {
+      const profile = value as Record<string, unknown>
+      const token = (profile.token || profile.key) as string | undefined
+      if (token) return token
+    }
+  }
+  return undefined
 }
 
 export async function testOpenRouterKey(): Promise<ConnectionStatus> {

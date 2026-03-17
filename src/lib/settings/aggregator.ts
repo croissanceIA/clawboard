@@ -90,12 +90,20 @@ export function aggregateSettings(): AggregatedSettings {
     : 'N/A'
   const clawboardPort = process.env.PORT || '3000'
 
-  // API Keys section
-  const openRouterToken = authProfiles
-    ? String(
-        getNestedValue(authProfiles, 'profiles.openrouter:manual.token') ?? ''
-      )
-    : ''
+  // API Keys section — find any openrouter profile (manual, default, etc.)
+  let openRouterToken = ''
+  if (authProfiles) {
+    const profiles = getNestedValue(authProfiles, 'profiles') as Record<string, unknown> | undefined
+    if (profiles && typeof profiles === 'object') {
+      for (const [key, value] of Object.entries(profiles)) {
+        if (key.startsWith('openrouter:') && value && typeof value === 'object') {
+          const profile = value as Record<string, unknown>
+          const token = (profile.token || profile.key) as string | undefined
+          if (token) { openRouterToken = token; break }
+        }
+      }
+    }
+  }
   const maskedKey = openRouterToken ? maskApiKey(openRouterToken) : 'N/A'
 
   const openRouterBaseUrl = models
